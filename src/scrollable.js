@@ -15,10 +15,10 @@ for (var i = 0; i < scrollableKeys.length; i++) {
     function(e) {
       var frameRect = this.frame.getBoundingClientRect();
       var contentRect = this.content.getBoundingClientRect();
-      var scrollDelta = frameRect.top - contentRect.top;
-      var barRatio = (frameRect.height / contentRect.height) * 100;
+      var barRatio = frameRect.height / contentRect.height;
+      var scrollDelta = (frameRect.top - contentRect.top) * barRatio;
 
-      updateScrollbar.bind(this.scrollBar)(scrollDelta, barRatio);
+      updateScrollbar.bind(this.scrollBar)(scrollDelta, barRatio * 100);
       setScrollBarTimeout.bind({
         scrollBar: this.scrollBar,
         scrollBarTimeout: this.scrollBarTimeout
@@ -36,11 +36,11 @@ function setScrollBarTimeout(timeout) {
   if (this.scrollBar.className === "scroll-bar scrolling") {
     clearTimeout(this.scrollBarTimeout);
   } else {
-    this.scrollBar.className = "scroll-bar scrolling";
+    this.scrollBar.classList.add("scrolling");
   }
   this.scrollBarTimeout = setTimeout(
     function() {
-      this.className = "scroll-bar";
+      this.classList.remove("scrolling");
     }.bind(this.scrollBar),
     timeout
   );
