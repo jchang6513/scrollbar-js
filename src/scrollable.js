@@ -18,20 +18,30 @@ for (var i = 0; i < scrollableKeys.length; i++) {
       var scrollDelta = frameRect.top - contentRect.top;
       var barRatio = (frameRect.height / contentRect.height) * 100;
 
-      this.scrollBar.style.top = scrollDelta + "px";
-      this.scrollBar.style.height = barRatio + "%";
-
-      if (this.scrollBar.className === "scroll-bar scrolling") {
-        clearTimeout(this.scrollBarTimeout);
-      } else {
-        this.scrollBar.className = "scroll-bar scrolling";
-      }
-      this.scrollBarTimeout = setTimeout(
-        function() {
-          this.className = "scroll-bar";
-        }.bind(this.scrollBar),
-        1500
-      );
+      updateScrollbar.bind(this.scrollBar)(scrollDelta, barRatio);
+      setScrollBarTimeout.bind({
+        scrollBar: this.scrollBar,
+        scrollBarTimeout: this.scrollBarTimeout
+      })(1500);
     }.bind({ scrollable, frame, content, scrollBarTimeout, scrollBar })
+  );
+}
+
+function updateScrollbar(offSet, length) {
+  this.style.top = offSet + "px";
+  this.style.height = length + "%";
+}
+
+function setScrollBarTimeout(timeout) {
+  if (this.scrollBar.className === "scroll-bar scrolling") {
+    clearTimeout(this.scrollBarTimeout);
+  } else {
+    this.scrollBar.className = "scroll-bar scrolling";
+  }
+  this.scrollBarTimeout = setTimeout(
+    function() {
+      this.className = "scroll-bar";
+    }.bind(this.scrollBar),
+    timeout
   );
 }
