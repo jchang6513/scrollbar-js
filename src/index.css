@@ -8,12 +8,22 @@ body > * {
 
 .scrollable {
   height: 300px;
-  padding: 0 20px;
   width: 200px;
 }
 
 .custom-1 {
   background-color: #eee;
+}
+
+.custom-1 .content {
+  background-image: linear-gradient(
+    180deg,
+    #b6e9d3 0%,
+    #1fc8db 51%,
+    #2cb5e8 75%
+  );
+  height: 1690px;
+  width: 500px;
 }
 
 .custom-2 {
