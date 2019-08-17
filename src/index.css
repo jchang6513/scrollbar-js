@@ -1,0 +1,21 @@
+body {
+  display: flex;
+}
+
+body > * {
+  margin-right: 10px;
+}
+
+.scrollable {
+  height: 300px;
+  padding: 0 20px;
+  width: 200px;
+}
+
+.custom-1 {
+  background-color: #eee;
+}
+
+.custom-2 {
+  background-color: #fee;
+}

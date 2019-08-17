@@ -1,0 +1,29 @@
+.scrollable {
+  position: relative;
+  overflow: hidden;
+}
+
+.scrollable .scroll-frame {
+  height: 100%;
+  position: relative;
+  overflow: scroll;
+  width: 100%;
+}
+
+.scrollable .scroll-frame::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollable .scroll-content {
+  position: absolute;
+  top: 0px;
+}
+
+.scrollable .scroll-bar {
+  background-color: gainsboro;
+  height: 100%;
+  position: absolute;
+  right: 0px;
+  top: 0px;
+  width: 5px;
+}
