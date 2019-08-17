@@ -14,22 +14,33 @@
   display: none;
 }
 
-.scrollable .scroll-content {
+.scrollable .scroll-frame .scroll-content {
+  min-height: 100%;
+  min-width: 100%;
   position: absolute;
   top: 0px;
 }
 
-.scrollable .scroll-bar {
-  background-color: gainsboro;
-  height: 100%;
+.scrollable .scrollbar {
+  background-color: rgb(114, 114, 114);
+  border-radius: 20px;
   position: absolute;
   opacity: 0;
-  right: 0px;
-  top: 0px;
   transition: opacity 0.3s;
-  width: 5px;
 }
 
-.scrollable .scroll-bar.scrolling {
+.scrollable .scrollbar.scrolling {
   opacity: 1;
+}
+
+.scrollbar-x {
+  bottom: 2px;
+  height: 5px;
+  left: 0px;
+}
+
+.scrollbar-y {
+  right: 2px;
+  top: 0px;
+  width: 5px;
 }

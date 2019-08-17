@@ -1,18 +1,10 @@
-body {
-  display: flex;
-}
-
 body > * {
-  margin-right: 10px;
+  margin-bottom: 10px;
 }
 
 .scrollable {
-  height: 300px;
-  width: 200px;
-}
-
-.custom-1 {
-  background-color: #eee;
+  height: 200px;
+  width: 100%;
 }
 
 .custom-1 .content {
@@ -22,10 +14,12 @@ body > * {
     #1fc8db 51%,
     #2cb5e8 75%
   );
-  height: 1690px;
-  width: 500px;
+  height: 200vh;
+  widows: 100%;
 }
 
-.custom-2 {
-  background-color: #fee;
+.custom-2 .content {
+  background-image: linear-gradient(90deg, #fff6b7, #f6416c);
+  height: 200px;
+  width: 200vw;
 }
