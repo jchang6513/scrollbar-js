@@ -23,7 +23,6 @@
 
 .scrollable .scrollbar {
   background-color: rgb(114, 114, 114);
-  border-radius: 20px;
   position: absolute;
   opacity: 0;
   transition: opacity 0.3s;
@@ -34,13 +33,13 @@
 }
 
 .scrollbar-x {
-  bottom: 2px;
+  bottom: 0px;
   height: 5px;
   left: 0px;
 }
 
 .scrollbar-y {
-  right: 2px;
+  right: 0px;
   top: 0px;
   width: 5px;
 }

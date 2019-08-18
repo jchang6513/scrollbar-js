@@ -3,17 +3,28 @@ var Direction = {
   Vertical: "vertical"
 };
 
-class Scrollable {
+export default class Scrollable {
   constructor(el) {
-    this.frame = el.getElementsByClassName("scroll-frame")[0];
-    this.content = el.getElementsByClassName("scroll-content")[0];
-    this.scrollbarX = this.createScrollBar(Direction.Horizontal);
-    this.scrollbarY = this.createScrollBar(Direction.Vertical);
-    el.append(this.scrollbarX);
-    el.append(this.scrollbarY);
-    this.scrollBarTimeoutX = 0;
-    this.scrollBarTimeoutY = 0;
-    this.timeout = 1500;
+    this.scrollable = el;
+    this.frame = this.scrollable.getElementsByClassName("scroll-frame")[0];
+    this.frameRect = this.frame.getBoundingClientRect();
+    this.content = this.scrollable.getElementsByClassName("scroll-content")[0];
+    this.contentRect = this.content.getBoundingClientRect();
+    this.addScrollBars();
+    this.timeout = 3000;
+  }
+
+  addScrollBars() {
+    this.scrollbarX = {
+      el: this.createScrollBar(Direction.Horizontal),
+      timeout: 0
+    };
+    this.scrollbarY = {
+      el: this.createScrollBar(Direction.Vertical),
+      timeout: 0
+    };
+    this.scrollable.append(this.scrollbarX.el);
+    this.scrollable.append(this.scrollbarY.el);
   }
 
   createScrollBar(type) {
@@ -58,57 +69,74 @@ class Scrollable {
     return { offSet, length };
   }
 
+  updateRects() {
+    this.frameRect = this.frame.getBoundingClientRect();
+    this.contentRect = this.content.getBoundingClientRect();
+  }
+
+  getScrollbarXState() {
+    var lengthRatio = this.frameRect.width / this.contentRect.width;
+    var offset = Math.round(
+      (this.frameRect.left - this.contentRect.left) * lengthRatio
+    );
+    var length = Math.round(lengthRatio * 100);
+    return { offset, length };
+  }
+
+  getScrollbarYState() {
+    var lengthRatio = this.frameRect.height / this.contentRect.height;
+    var offset = Math.round(
+      (this.frameRect.top - this.contentRect.top) * lengthRatio
+    );
+    var length = Math.round(lengthRatio * 100);
+    return { offset, length };
+  }
+
   updateScrollbars(offset, length) {
-    if (length.x < 100) {
-      this.updateScrollbarX(offset.x, length.x);
-    }
-    if (length.y < 100) {
-      this.updateScrollbarY(offset.y, length.y);
-    }
+    this.updateRects();
+    this.updateScrollbarX(offset.x, length.x);
+    this.updateScrollbarY();
   }
 
-  updateScrollbarX(offset, length) {
-    if (offset >= 0 && getStyleLeft(this.scrollbarX) !== offset) {
-      setStyleLeft(this.scrollbarX, offset);
-      this.scrollbarX.classList.add("scrolling");
+  updateScrollbarX() {
+    var state = this.getScrollbarXState();
+    var offset = state.offset;
+    var length = state.length;
+    if (getStyleLeft(this.scrollbarX.el) !== offset) {
+      this.setScrollbarTimeout.call(
+        { scrollbar: this.scrollbarX },
+        this.timeout
+      );
     }
-    if (length && getStyleWidth(this.scrollbarX) !== length) {
-      setStyleWidth(this.scrollbarX, length);
-    }
-    this.scrollBarTimeoutX = this.setScrollbarTimeout.call(
-      {
-        scrollbar: this.scrollbarX,
-        scrollBarTimeout: this.scrollBarTimeoutX
-      },
-      this.timeout
-    );
+    setStyleLeft(this.scrollbarX.el, offset);
+    setStyleWidth(this.scrollbarX.el, length);
   }
 
-  updateScrollbarY(offset, length) {
-    if (offset >= 0 && getStyleTop(this.scrollbarY) !== offset) {
-      setStyleTop(this.scrollbarY, offset);
-      this.scrollbarY.classList.add("scrolling");
+  updateScrollbarY() {
+    var state = this.getScrollbarYState();
+    var offset = state.offset;
+    var length = state.length;
+    if (getStyleTop(this.scrollbarY.el) !== offset) {
+      this.setScrollbarTimeout.call(
+        { scrollbar: this.scrollbarY },
+        this.timeout
+      );
     }
-    if (getStyleHeight(this.scrollbarY) !== length) {
-      setStyleHeight(this.scrollbarY, length);
-    }
-    this.scrollBarTimeoutY = this.setScrollbarTimeout.call(
-      {
-        scrollbar: this.scrollbarY,
-        scrollBarTimeout: this.scrollBarTimeoutY
-      },
-      this.timeout
-    );
+    setStyleTop(this.scrollbarY.el, offset);
+    setStyleHeight(this.scrollbarY.el, length);
   }
 
   setScrollbarTimeout(timeout) {
-    if (this.scrollbar.classList.contains("scrolling")) {
-      clearTimeout(this.scrollBarTimeout);
+    if (this.scrollbar.el.classList.contains("scrolling")) {
+      clearTimeout(this.scrollbar.timeout);
+    } else {
+      this.scrollbar.el.classList.add("scrolling");
     }
-    this.scrollBarTimeout = setTimeout(
+
+    this.scrollbar.timeout = setTimeout(
       function() {
         this.classList.remove("scrolling");
-      }.bind(this.scrollbar),
+      }.bind(this.scrollbar.el),
       timeout
     );
   }
@@ -128,15 +156,6 @@ class Scrollable {
   }
 }
 
-var scrollables = document.getElementsByClassName("scrollable");
-var scrollableKeys = Object.keys(scrollables);
-
-for (var i = 0; i < scrollableKeys.length; i++) {
-  var scrollable = scrollables[scrollableKeys[i]];
-  var temp = new Scrollable(scrollable);
-  temp.onScroll();
-}
-
 // getter and setter
 
 function getStyleTop(el) {
@@ -144,7 +163,9 @@ function getStyleTop(el) {
 }
 
 function setStyleTop(el, top) {
-  el.style.top = top + "px";
+  if (getStyleTop(el) !== top) {
+    el.style.top = top + "px";
+  }
 }
 
 function getStyleLeft(el) {
@@ -152,7 +173,9 @@ function getStyleLeft(el) {
 }
 
 function setStyleLeft(el, left) {
-  el.style.left = left + "px";
+  if (getStyleLeft(el) !== left) {
+    el.style.left = left + "px";
+  }
 }
 
 function getStyleWidth(el) {
@@ -160,7 +183,9 @@ function getStyleWidth(el) {
 }
 
 function setStyleWidth(el, length) {
-  el.style.width = length + "%";
+  if (getStyleWidth(el) !== length) {
+    el.style.width = length + "%";
+  }
 }
 
 function getStyleHeight(el) {
@@ -168,5 +193,7 @@ function getStyleHeight(el) {
 }
 
 function setStyleHeight(el, length) {
-  el.style.height = length + "%";
+  if (getStyleHeight(el) !== length) {
+    el.style.height = length + "%";
+  }
 }
