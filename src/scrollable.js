@@ -4,7 +4,12 @@ const Direction = {
 };
 
 export default class Scrollable {
-  constructor(el) {
+  constructor(props) {
+    const { el, scrollbarX = true, scrollbarY = true } = props;
+    this.state = {
+      scrollbarX,
+      scrollbarY
+    };
     if (isElement(el)) {
       this.scrollable = el;
       this.frame = this.scrollable.getElementsByClassName("scroll-frame")[0];
@@ -22,16 +27,20 @@ export default class Scrollable {
 
   addScrollBars() {
     const { scrollable } = this;
-    this.scrollbarX = {
-      el: this.createScrollBar(Direction.Horizontal),
-      timeout: 0
-    };
-    this.scrollbarY = {
-      el: this.createScrollBar(Direction.Vertical),
-      timeout: 0
-    };
-    scrollable.append(this.scrollbarX.el);
-    scrollable.append(this.scrollbarY.el);
+    if (this.state.scrollbarX) {
+      this.scrollbarX = {
+        el: this.createScrollBar(Direction.Horizontal),
+        timeout: 0
+      };
+      scrollable.append(this.scrollbarX.el);
+    }
+    if (this.state.scrollbarY) {
+      this.scrollbarY = {
+        el: this.createScrollBar(Direction.Vertical),
+        timeout: 0
+      };
+      scrollable.append(this.scrollbarY.el);
+    }
   }
 
   createScrollBar(type) {
@@ -84,8 +93,12 @@ export default class Scrollable {
   }
 
   updateScrollbars() {
-    this.updateScrollbarX();
-    this.updateScrollbarY();
+    if (this.state.scrollbarX) {
+      this.updateScrollbarX();
+    }
+    if (this.state.scrollbarY) {
+      this.updateScrollbarY();
+    }
   }
 
   updateScrollbarX() {

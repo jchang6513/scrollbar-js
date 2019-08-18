@@ -5,6 +5,8 @@ var scrollableKeys = Object.keys(scrollables);
 
 for (var i = 0; i < scrollableKeys.length; i++) {
   var scrollable = scrollables[scrollableKeys[i]];
-  var temp = new Scrollable(scrollable);
+  var temp = new Scrollable({
+    el: scrollable
+  });
   temp.onScroll();
 }
