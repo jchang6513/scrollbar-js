@@ -1,20 +1,27 @@
-var Direction = {
+const Direction = {
   Horizontal: "horizontal",
   Vertical: "vertical"
 };
 
 export default class Scrollable {
   constructor(el) {
-    this.scrollable = el;
-    this.frame = this.scrollable.getElementsByClassName("scroll-frame")[0];
-    this.frameRect = this.frame.getBoundingClientRect();
-    this.content = this.scrollable.getElementsByClassName("scroll-content")[0];
-    this.contentRect = this.content.getBoundingClientRect();
-    this.addScrollBars();
-    this.timeout = 3000;
+    if (isElement(el)) {
+      this.scrollable = el;
+      this.frame = this.scrollable.getElementsByClassName("scroll-frame")[0];
+      this.frameRect = this.frame.getBoundingClientRect();
+      this.content = this.scrollable.getElementsByClassName(
+        "scroll-content"
+      )[0];
+      this.contentRect = this.content.getBoundingClientRect();
+      this.addScrollBars();
+    } else {
+      throw new Error("the input element is invalid");
+    }
+    this.timeout = 1500;
   }
 
   addScrollBars() {
+    const { scrollable } = this;
     this.scrollbarX = {
       el: this.createScrollBar(Direction.Horizontal),
       timeout: 0
@@ -23,12 +30,12 @@ export default class Scrollable {
       el: this.createScrollBar(Direction.Vertical),
       timeout: 0
     };
-    this.scrollable.append(this.scrollbarX.el);
-    this.scrollable.append(this.scrollbarY.el);
+    scrollable.append(this.scrollbarX.el);
+    scrollable.append(this.scrollbarY.el);
   }
 
   createScrollBar(type) {
-    var scrollbar = this.createClassElement("div", "scrollbar");
+    const scrollbar = this.createClassElement("div", "scrollbar");
     switch (type) {
       case Direction.Horizontal: {
         scrollbar.classList.add("scrollbar-x");
@@ -46,27 +53,9 @@ export default class Scrollable {
   }
 
   createClassElement(tag, className) {
-    var el = document.createElement(tag);
+    const el = document.createElement(tag);
     el.className = className;
     return el;
-  }
-
-  getScrollbarState() {
-    var frameRect = this.frame.getBoundingClientRect();
-    var contentRect = this.content.getBoundingClientRect();
-    var lengthRatio = {
-      x: frameRect.width / contentRect.width,
-      y: frameRect.height / contentRect.height
-    };
-    var offSet = {
-      x: Math.round((frameRect.left - contentRect.left) * lengthRatio.x),
-      y: Math.round((frameRect.top - contentRect.top) * lengthRatio.y)
-    };
-    var length = {
-      x: Math.round(lengthRatio.x * 100),
-      y: Math.round(lengthRatio.y * 100)
-    };
-    return { offSet, length };
   }
 
   updateRects() {
@@ -75,68 +64,62 @@ export default class Scrollable {
   }
 
   getScrollbarXState() {
-    var lengthRatio = this.frameRect.width / this.contentRect.width;
-    var offset = Math.round(
-      (this.frameRect.left - this.contentRect.left) * lengthRatio
-    );
-    var length = Math.round(lengthRatio * 100);
+    const { frameRect, contentRect } = this;
+    const { width: fWidth, left: fLeft } = frameRect;
+    const { width: cWidth, left: cLeft } = contentRect;
+    const lengthRatio = fWidth / cWidth;
+    const offset = Math.round((fLeft - cLeft) * lengthRatio);
+    const length = Math.round(lengthRatio * 100);
     return { offset, length };
   }
 
   getScrollbarYState() {
-    var lengthRatio = this.frameRect.height / this.contentRect.height;
-    var offset = Math.round(
-      (this.frameRect.top - this.contentRect.top) * lengthRatio
-    );
-    var length = Math.round(lengthRatio * 100);
+    const { frameRect, contentRect } = this;
+    const { height: fHeight, top: fTop } = frameRect;
+    const { height: cHeight, top: cTop } = contentRect;
+    const lengthRatio = fHeight / cHeight;
+    const offset = Math.round((fTop - cTop) * lengthRatio);
+    const length = Math.round(lengthRatio * 100);
     return { offset, length };
   }
 
-  updateScrollbars(offset, length) {
-    this.updateRects();
-    this.updateScrollbarX(offset.x, length.x);
+  updateScrollbars() {
+    this.updateScrollbarX();
     this.updateScrollbarY();
   }
 
   updateScrollbarX() {
-    var state = this.getScrollbarXState();
-    var offset = state.offset;
-    var length = state.length;
-    if (getStyleLeft(this.scrollbarX.el) !== offset) {
-      this.setScrollbarTimeout.call(
-        { scrollbar: this.scrollbarX },
-        this.timeout
-      );
+    const { offset, length } = this.getScrollbarXState();
+    const { scrollbarX, timeout } = this;
+    const { el: scrollBarEl } = scrollbarX;
+    if (getStyleLeft(scrollBarEl) !== offset) {
+      this.setScrollbarTimeout.call(scrollbarX, timeout);
     }
-    setStyleLeft(this.scrollbarX.el, offset);
-    setStyleWidth(this.scrollbarX.el, length);
+    setStyleLeft(scrollBarEl, offset);
+    setStyleWidth(scrollBarEl, length);
   }
 
   updateScrollbarY() {
-    var state = this.getScrollbarYState();
-    var offset = state.offset;
-    var length = state.length;
-    if (getStyleTop(this.scrollbarY.el) !== offset) {
-      this.setScrollbarTimeout.call(
-        { scrollbar: this.scrollbarY },
-        this.timeout
-      );
+    const { offset, length } = this.getScrollbarYState();
+    const { scrollbarY, timeout } = this;
+    const { el: scrollBarEl } = scrollbarY;
+    if (getStyleTop(scrollBarEl) !== offset) {
+      this.setScrollbarTimeout.call(scrollbarY, timeout);
     }
-    setStyleTop(this.scrollbarY.el, offset);
-    setStyleHeight(this.scrollbarY.el, length);
+    setStyleTop(scrollBarEl, offset);
+    setStyleHeight(scrollBarEl, length);
   }
 
   setScrollbarTimeout(timeout) {
-    if (this.scrollbar.el.classList.contains("scrolling")) {
-      clearTimeout(this.scrollbar.timeout);
-    } else {
-      this.scrollbar.el.classList.add("scrolling");
-    }
+    const { el } = this;
+    el.classList.contains("scrolling")
+      ? clearTimeout(this.timeout)
+      : el.classList.add("scrolling");
 
-    this.scrollbar.timeout = setTimeout(
+    this.timeout = setTimeout(
       function() {
         this.classList.remove("scrolling");
-      }.bind(this.scrollbar.el),
+      }.bind(el),
       timeout
     );
   }
@@ -149,11 +132,32 @@ export default class Scrollable {
     this.frame.addEventListener(
       "scroll",
       function() {
-        var state = this.getScrollbarState();
-        this.updateScrollbars(state.offSet, state.length);
+        this.updateRects();
+        this.updateScrollbars();
       }.bind(this)
     );
   }
+}
+
+//Returns true if it is a DOM node
+function isNode(o) {
+  return typeof Node === "object"
+    ? o instanceof Node
+    : o &&
+        typeof o === "object" &&
+        typeof o.nodeType === "number" &&
+        typeof o.nodeName === "string";
+}
+
+//Returns true if it is a DOM element
+function isElement(o) {
+  return typeof HTMLElement === "object"
+    ? o instanceof HTMLElement //DOM2
+    : o &&
+        typeof o === "object" &&
+        o !== null &&
+        o.nodeType === 1 &&
+        typeof o.nodeName === "string";
 }
 
 // getter and setter
