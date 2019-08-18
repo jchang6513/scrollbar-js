@@ -1,3 +1,8 @@
+var Direction = {
+  Horizontal: "horizontal",
+  Vertical: "vertical"
+};
+
 var scrollables = document.getElementsByClassName("scrollable");
 var scrollableKeys = Object.keys(scrollables);
 
@@ -5,52 +10,21 @@ for (var i = 0; i < scrollableKeys.length; i++) {
   var scrollable = scrollables[scrollableKeys[i]];
   var frame = scrollable.getElementsByClassName("scroll-frame")[0];
   var content = scrollable.getElementsByClassName("scroll-content")[0];
-  var scrollbarX = createClassElement("div", "scrollbar scrollbar-x");
-  scrollbarX.style.left = "0px";
-  var scrollbarY = createClassElement("div", "scrollbar scrollbar-y");
-  scrollbarY.style.top = "0px";
+  var scrollbarX = createScrollBar(Direction.Horizontal);
+  var scrollbarY = createScrollBar(Direction.Vertical);
   scrollable.append(scrollbarX);
   scrollable.append(scrollbarY);
   var scrollBarTimeoutX;
-  var scrollBarTimeoutY = 1;
+  var scrollBarTimeoutY;
 
   frame.addEventListener(
     "scroll",
-    function(e) {
+    function() {
       var state = getScrollbarState.call({
         frame: this.frame,
         content: this.content
       });
-
-      if (state.length.x < 100) {
-        updateScrollbarX.call(
-          { scrollbar: this.scrollbarX },
-          state.offSet.x,
-          state.length.x
-        );
-        this.scrollBarTimeoutX = setScrollbarTimeout.call(
-          {
-            scrollbar: this.scrollbarX,
-            scrollBarTimeout: this.scrollBarTimeoutX
-          },
-          3000
-        );
-      }
-
-      if (state.length.y < 100) {
-        updateScrollbar.call(
-          { scrollbar: this.scrollbarY },
-          state.offSet.y,
-          state.length.y
-        );
-        this.scrollBarTimeoutY = setScrollbarTimeout.call(
-          {
-            scrollbar: this.scrollbarY,
-            scrollBarTimeout: this.scrollBarTimeoutY
-          },
-          3000
-        );
-      }
+      updateScrollbars.call(this, state.offSet, state.length);
     }.bind({
       scrollable,
       frame,
@@ -61,6 +35,24 @@ for (var i = 0; i < scrollableKeys.length; i++) {
       scrollBarTimeoutY
     })
   );
+}
+
+function createScrollBar(type) {
+  var scrollbar = createClassElement("div", "scrollbar");
+  switch (type) {
+    case Direction.Horizontal: {
+      scrollbar.classList.add("scrollbar-x");
+      scrollbar.style.left = "0px";
+      return scrollbar;
+    }
+    case Direction.Vertical: {
+      scrollbar.classList.add("scrollbar-y");
+      scrollbar.style.top = "0px";
+      return scrollbar;
+    }
+    default:
+      return null;
+  }
 }
 
 function createClassElement(tag, className) {
@@ -87,34 +79,93 @@ function getScrollbarState() {
   return { offSet, length };
 }
 
-function updateScrollbarX(offSet, length) {
-  if (parseInt(this.scrollbar.style.left, 10) !== offSet) {
-    this.scrollbar.style.left = offSet + "px";
-    this.scrollbar.classList.add("scrolling");
+function updateScrollbars(offset, length) {
+  if (length.x < 100) {
+    updateScrollbarX.call(
+      {
+        scrollbar: this.scrollbarX,
+        scrollBarTimeout: this.scrollBarTimeoutX
+      },
+      offset.x,
+      length.x
+    );
   }
-  if (this.scrollbar.style.width !== length + "%") {
-    this.scrollbar.style.width = length + "%";
+  if (length.y < 100) {
+    updateScrollbarY.call(
+      {
+        scrollbar: this.scrollbarY,
+        scrollBarTimeout: this.scrollBarTimeoutY
+      },
+      offset.y,
+      length.y
+    );
   }
 }
 
-function updateScrollbar(offSet, length) {
-  if (parseInt(this.scrollbar.style.top, 10) !== offSet) {
-    this.scrollbar.style.top = offSet + "px";
+function updateScrollbarX(offset, length) {
+  if (offset >= 0 && getStyleLeft(this.scrollbar) !== offset) {
+    setStyleLeft(this.scrollbar, offset);
     this.scrollbar.classList.add("scrolling");
   }
-  if (this.scrollbar.style.height !== length + "%") {
-    this.scrollbar.style.height = length + "%";
+  if (length && getStyleWidth(this.scrollbar) !== length) {
+    setStyleWidth(this.scrollbar, length);
   }
+  setScrollbarTimeout.call(this, 1500);
+}
+
+function updateScrollbarY(offset, length) {
+  if (offset >= 0 && getStyleTop(this.scrollbar) !== offset) {
+    setStyleTop(this.scrollbar, offset);
+    this.scrollbar.classList.add("scrolling");
+  }
+  if (getStyleHeight(this.scrollbar) !== length) {
+    setStyleHeight(this.scrollbar, length);
+  }
+  setScrollbarTimeout.call(this, 1500);
 }
 
 function setScrollbarTimeout(timeout) {
   if (this.scrollbar.classList.contains("scrolling")) {
     clearTimeout(this.scrollBarTimeout);
   }
-  return setTimeout(
+  this.scrollBarTimeout = setTimeout(
     function() {
       this.classList.remove("scrolling");
     }.bind(this.scrollbar),
     timeout
   );
+}
+
+// getter and setter
+
+function getStyleTop(el) {
+  return parseInt(el.style.top, 10);
+}
+
+function setStyleTop(el, top) {
+  el.style.top = top + "px";
+}
+
+function getStyleLeft(el) {
+  return parseInt(el.style.left, 10);
+}
+
+function setStyleLeft(el, left) {
+  el.style.left = left + "px";
+}
+
+function getStyleWidth(el) {
+  return parseInt(el.style.width, 10);
+}
+
+function setStyleWidth(el, length) {
+  el.style.width = length + "%";
+}
+
+function getStyleHeight(el) {
+  return parseInt(el.style.height, 10);
+}
+
+function setStyleHeight(el, length) {
+  el.style.height = length + "%";
 }
